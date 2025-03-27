@@ -37,49 +37,6 @@ def get_expert_mapping(expert_scores, num_experts_to_prune):
     return expert_mapping, kept_experts
 
 
-def prune_expert_weights(state_dict, layer_id, expert_mapping, kept_experts):
-    """
-    Prunes expert weights and related tensors for a given layer.
-    
-    Args:
-        state_dict (dict): State dict containing model weights
-        layer_id (int): Layer ID
-        expert_mapping (dict): Mapping from old expert indices to new indices
-        kept_experts (list): List of expert indices to keep
-        
-    Returns:
-        dict: Updated state dict with pruned weights
-    """
-    new_state_dict = {}
-    
-    for key, tensor in state_dict.items():
-        # Check if this is an expert-related tensor
-        if f"layers.{layer_id}.ffn" in key:
-            if "experts" in key and "shared_experts" not in key:
-                # Handle expert weights - only keep the specified experts
-                expert_idx = int(key.split("experts.")[1].split(".")[0])
-                if expert_idx in expert_mapping:
-                    new_key = key.replace(f"experts.{expert_idx}", f"experts.{expert_mapping[expert_idx]}")
-                    new_state_dict[new_key] = tensor
-            elif "shared_experts" in key:
-                # Keep shared expert weights as is
-                new_state_dict[key] = tensor
-            elif "gate.weight" in key:
-                # Handle gate weights - only for routed experts
-                new_state_dict[key] = tensor[kept_experts, :]
-            elif "gate.e_score_correction_bias" in key:
-                # Handle bias - only for routed experts
-                new_state_dict[key] = tensor[kept_experts]
-            else:
-                # Keep other tensors as is
-                new_state_dict[key] = tensor
-        else:
-            # Keep non-expert tensors as is
-            new_state_dict[key] = tensor
-    
-    return new_state_dict
-
-
 def copy_additional_files(input_path, output_path):
     """
     Copies tokenizer, config, and other necessary files to the output path.
