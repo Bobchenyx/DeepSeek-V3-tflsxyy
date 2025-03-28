@@ -9,7 +9,7 @@ import torch.distributed as dist
 import torch.nn.functional as F
 from transformers import AutoTokenizer
 from safetensors.torch import load_model
-from datasets import load_dataset
+from datasets import load_dataset, Dataset
 
 from model import Transformer, ModelArgs, MoE
 
@@ -228,30 +228,28 @@ def track_expert_scores(ckpt_path: str, config_path: str):
     
     # Load MMLU dataset - both test and validation splits
     print("Loading MMLU datasets...")
-    test_dataset = load_dataset("cais/mmlu", "all", split="test")
-    val_dataset = load_dataset("cais/mmlu", "all", split="validation")
-    train_dataset = load_dataset("cais/mmlu", "all", split="auxiliary_train")
-
+    # Original code: test_dataset = load_dataset("cais/mmlu", "all", split="test")
+    # Load from local parquet file instead
+    print("Loading from local parquet file...")
+    test_dataset = Dataset.from_parquet("/root/DeepSeek-V3/inference/test-00000-of-00001.parquet")
     print(f"Loaded MMLU test dataset with {len(test_dataset)} examples")
-    print(f"Loaded MMLU validation dataset with {len(val_dataset)} examples")
-    print(f"Loaded MMLU train dataset with {len(train_dataset)} examples")
 
-    # Combine datasets and limit to 30000 samples
-    all_examples = []
-    for example in test_dataset:
-        all_examples.append(example)
-    for example in val_dataset:
-        all_examples.append(example)
-    for example in train_dataset:
-        all_examples.append(example)
+    # # Combine datasets and limit to 30000 samples
+    # all_examples = []
+    # for example in test_dataset:
+    #     all_examples.append(example)
+    # for example in val_dataset:
+    #     all_examples.append(example)
+    # for example in train_dataset:
+    #     all_examples.append(example)
     
-    # Limit to first 30000 samples
-    all_examples = all_examples[:30000]
-    print(f"Using first 30000 examples from combined dataset")
+    # # Limit to first 30000 samples
+    # all_examples = all_examples[:30000]
+    # print(f"Using first 30000 examples from combined dataset")
     
     # Extract text from MMLU dataset
     all_texts = []
-    for example in all_examples:
+    for example in test_dataset:
         question = example['question']
         choices = example['choices']
         subject = example['subject']
@@ -270,7 +268,7 @@ def track_expert_scores(ckpt_path: str, config_path: str):
     print(f"Total tokens in MMLU dataset: {len(all_tokens)}")
 
     # Ensure we don't exceed max_seq_len
-    max_seq_len = min(model.max_seq_len, 4096)  # Use 4096 as a reasonable default max length
+    max_seq_len = min(model.max_seq_len, 16384)  # Use 16384 as a reasonable default max length
     print(f"Using sequence length: {max_seq_len}")
 
     total_loss = 0.0
@@ -398,21 +396,15 @@ def track_expert_scores_layerwise(ckpt_path: str, config_path: str, prune_expert
 
     # Load MMLU dataset - both test and validation splits
     print("Loading MMLU datasets...")
-    test_dataset = load_dataset("cais/mmlu", "all", split="test")
-    val_dataset = load_dataset("cais/mmlu", "all", split="validation")
-    train_dataset = load_dataset("cais/mmlu", "all", split="auxiliary_train")
-    
+    # Original code: test_dataset = load_dataset("cais/mmlu", "all", split="test")
+    # Load from local parquet file instead
+    print("Loading from local parquet file...")
+    test_dataset = Dataset.from_parquet("/root/DeepSeek-V3/inference/test-00000-of-00001.parquet")
     print(f"Loaded MMLU test dataset with {len(test_dataset)} examples")
-    print(f"Loaded MMLU validation dataset with {len(val_dataset)} examples")
-    print(f"Loaded MMLU train dataset with {len(train_dataset)} examples")
     
     # Combine datasets and limit to 1000 samples
     all_examples = []
     for example in test_dataset:
-        all_examples.append(example)
-    for example in val_dataset:
-        all_examples.append(example)
-    for example in train_dataset:
         all_examples.append(example)
     
     # Limit to first 10000 samples
@@ -440,7 +432,7 @@ def track_expert_scores_layerwise(ckpt_path: str, config_path: str, prune_expert
     print(f"Total tokens in MMLU dataset: {len(all_tokens)}")
 
     # Ensure we don't exceed max_seq_len
-    max_seq_len = min(model.max_seq_len, 4096)  # Use 4096 as a reasonable default max length
+    max_seq_len = min(model.max_seq_len, 16384)  # Use 16384 as a reasonable default max length
     print(f"Using sequence length: {max_seq_len}")
     
     # Prepare batches
