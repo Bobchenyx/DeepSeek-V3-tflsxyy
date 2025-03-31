@@ -43,7 +43,7 @@ DeepSeek-V3-0324-MoE-Pruner-E160-IQ1_S [🤗 Hugging Face](https://huggingface.c
 ## Execution
 On a 4xV100 server:
 ```bash
-./llama.cpp/llama-cli --model /scratch/xie.yany/deepseek-ai/DeepSeek-V3-0324-MoE-Pruner-E192-IQ1_S/DeepSeek-V3-0324-MoE-Pruner-E192-IQ1_S-00001-of-00022.gguf  --cache-type-k q8_0 --threads 64 --n-gpu-layers 61 -no-cnv --prio 3 --temp 0.3 --min_p 0.01 --ctx-size 4096 --seed 3407 --prompt "<｜User｜>Create a Flappy Bird game in Python.<｜Assistant｜>"
+./llama.cpp/llama-cli --model /root/dataDisk/deepseek-ai/DeepSeek-V3-0324-MoE-Pruner-E192-IQ1_S/DeepSeek-V3-0324-MoE-Pruner-E192-IQ1_S-00001-of-00022.gguf  --cache-type-k q8_0 --threads 64 --n-gpu-layers 61 -no-cnv --prio 3 --temp 0.3 --min_p 0.01 --ctx-size 4096 --seed 3407 --prompt "<｜User｜>Create a Flappy Bird game in Python.<｜Assistant｜>"
 ```
 
 ## Citation
