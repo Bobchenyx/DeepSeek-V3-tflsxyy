@@ -23,7 +23,7 @@ git clone git@github.com:unslothai/llama.cpp.git
 apt-get update
 apt-get install build-essential cmake curl libcurl4-openssl-dev -y
 cmake llama.cpp -B llama.cpp/build -DBUILD_SHARED_LIBS=OFF -DGGML_CUDA=ON -DLLAMA_CURL=ON
-cmake --build llama.cpp/build --config Release -j --clean-first --target llama-quantize llama-cli llama-gguf-split llama-imatrix llama-bench
+cmake --build llama.cpp/build --config Release -j --clean-first --target llama-cli llama-bench llama-gguf-split llama-quantize llama-imatrix llama-server
 cp llama.cpp/build/bin/llama-* llama.cpp
 ```
 ```bash
@@ -43,7 +43,16 @@ DeepSeek-V3-0324-MoE-Pruner-E160-IQ1_S [🤗 Hugging Face](https://huggingface.c
 ## Execution
 On a 4xV100 server:
 ```bash
-./llama.cpp/llama-cli --model /root/dataDisk/deepseek-ai/DeepSeek-V3-0324-MoE-Pruner-E192-IQ1_S/DeepSeek-V3-0324-MoE-Pruner-E192-IQ1_S-00001-of-00022.gguf  --cache-type-k q8_0 --threads 64 --n-gpu-layers 61 -no-cnv --prio 3 --temp 0.3 --min_p 0.01 --ctx-size 4096 --seed 3407 --prompt "<｜User｜>Create a Flappy Bird game in Python.<｜Assistant｜>"
+./llama.cpp/llama-cli --model /root/dataDisk/deepseek-ai/DeepSeek-V3-0324-MoE-Pruner-E192-IQ1_S/DeepSeek-V3-0324-MoE-Pruner-E192-IQ1_S-00001-of-00022.gguf  --cache-type-k q8_0 --threads 64 --n-gpu-layers 61 -no-cnv --prio 3 --temp 0.3 --min_p 0.01 --ctx-size 4096 --seed 3407 --prompt "<｜User｜>How are you doing?<｜Assistant｜>"
+```
+
+## Evaluation
+The llama-server is a patch code for evaluating local gguf by llama-server that is much faster than llama-cpp-python.
+```bash
+./llama.cpp/llama-server -m /root/dataDisk/deepseek-ai/DeepSeek-V3-0324-MoE-Pruner-E160-IQ1_S/DeepSeek-V3-0324-MoE-Pruner-E160-IQ1_S-00001-of-00018.gguf -ngl 62
+export no_proxy="localhost,127.0.0.1"
+export NO_PROXY="localhost,127.0.0.1"
+HF_DATASETS_TRUST_REMOTE_CODE=1 nohup lm-eval --model llama-server --tasks arc_challenge,arc_easy,boolq,hellaswag,mmlu,openbookqa,piqa,rte,winogrande --model_args base_url=http://127.0.0.1:8080
 ```
 
 ## Citation
