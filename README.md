@@ -6,7 +6,9 @@
 This repo is built on [deepseek-ai/DeepSeek-V3](https://github.com/deepseek-ai/DeepSeek-V3) for [expert pruning](https://arxiv.org/abs/2410.12013) and quantization (by [llama.cpp](https://github.com/ggml-org/llama.cpp)) of DeepSeek-V3 models. If you have any installation issues, please check the original repo.
 
 ## Expert Pruning
+
 On a 8xH200 server:
+
 ```bash
 git clone git@github.com:tflsxyy/DeepSeek-V3.git
 cd DeepSeek-V3/inference
@@ -17,7 +19,9 @@ python3 fp8_cast_bf16.py --input-fp8-hf-path /root/dataDisk/deepseek-ai/DeepSeek
 ```
 
 ## Quantization
+
 The quantization process is following [unsloth](https://unsloth.ai/blog/deepseek-v3-0324).
+
 ```bash
 git clone git@github.com:unslothai/llama.cpp.git
 apt-get update
@@ -61,7 +65,7 @@ Use lm-eval to evaluate the model in another terminal.
 ```bash
 export no_proxy="localhost,127.0.0.1"
 export NO_PROXY="localhost,127.0.0.1"
-HF_DATASETS_TRUST_REMOTE_CODE=1 nohup lm-eval --model llama-server --tasks arc_challenge,arc_easy,boolq,hellaswag,mmlu,openbookqa,piqa,rte,winogrande --model_args base_url=http://127.0.0.1:8080
+HF_DATASETS_TRUST_REMOTE_CODE=1 lm-eval --model llama-server --tasks arc_challenge,arc_easy,boolq,hellaswag,mmlu,openbookqa,piqa,rte,winogrande --model_args base_url=http://127.0.0.1:8080
 ```
 
 ## Citation
