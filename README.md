@@ -1,7 +1,4 @@
-<!-- markdownlint-disable first-line-h1 -->
-<!-- markdownlint-disable html -->
-<!-- markdownlint-disable no-duplicate-header -->
-# DeepSeek-V3-0324 Expert Pruning
+## DeepSeek-V3-0324 Expert Pruning
 
 This part of repo is built on [deepseek-ai/DeepSeek-V3](https://github.com/deepseek-ai/DeepSeek-V3) for [expert pruning](https://arxiv.org/abs/2410.12013) of DeepSeek-V3-0324 models. If you have any installation issues, please check the original repo.
 
