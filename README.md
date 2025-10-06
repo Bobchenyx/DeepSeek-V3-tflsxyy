@@ -1,21 +1,37 @@
 <!-- markdownlint-disable first-line-h1 -->
 <!-- markdownlint-disable html -->
 <!-- markdownlint-disable no-duplicate-header -->
-# DeepSeek-V3 Pruning and Quantization
+# DeepSeek-V3-0324 Expert Pruning
 
-This repo is built on [deepseek-ai/DeepSeek-V3](https://github.com/deepseek-ai/DeepSeek-V3) for [expert pruning](https://arxiv.org/abs/2410.12013) and quantization (by [llama.cpp](https://github.com/ggml-org/llama.cpp)) of DeepSeek-V3 models. If you have any installation issues, please check the original repo.
+This part of repo is built on [deepseek-ai/DeepSeek-V3](https://github.com/deepseek-ai/DeepSeek-V3) for [expert pruning](https://arxiv.org/abs/2410.12013) of DeepSeek-V3-0324 models. If you have any installation issues, please check the original repo.
 
 ## Expert Pruning
 
-On a 8xH200 server:
+The following code requires an 8×H200 GPU server for execution.
 
 ```bash
-git clone git@github.com:tflsxyy/DeepSeek-V3.git
-cd DeepSeek-V3/inference
-python3 convert.py --hf-ckpt-path /root/highspeedstorage/deepseek-v3-0324-eu/deepseek-ai/DeepSeek-V3-0324 --save-path /root/dataDisk/deepseek-ai/DeepSeek-V3-0324-DS-E256MP8 --n-experts 256 --model-parallel 8
-torchrun --nnodes 1 --nproc-per-node 8 generate.py --ckpt-path /root/dataDisk/deepseek-ai/DeepSeek-V3-0324-DS-E256MP8 --config configs/config_671B.json --track-expert-scores
-python3 moe_pruner.py --input-hf-path /root/highspeedstorage/deepseek-v3-0324-eu/deepseek-ai/DeepSeek-V3-0324 --input-expert-scores config_671B_expert_scores_seqlen_8k.json --prune-expert 64 --output-hf-path /root/dataDisk/deepseek-ai/DeepSeek-V3-0324-MoE-Pruner-E192
-python3 fp8_cast_bf16.py --input-fp8-hf-path /root/dataDisk/deepseek-ai/DeepSeek-V3-0324-MoE-Pruner-E192 --output-bf16-hf-path /root/dataDisk/deepseek-ai/DeepSeek-V3-0324-MoE-Pruner-E192-bf16
+git clone https://github.com/Bobchenyx/CC-MoE.git
+cd CC-MoE/DeepSeek-V3-Pruning/inference
+
+# Convert the HF checkpoint into a format suitable for multi-GPU inference
+python3 convert.py --hf-ckpt-path "<Path-To-DeepSeek-V3-0324>" \
+                   --save-path "<Path-To-DeepSeek-V3-0324-DS-E256MP8>" \
+                   --n-experts 256 --model-parallel 8
+
+# Run inference to track expert usage & scores across all tokens
+torchrun --nnodes 1 --nproc-per-node 8 generate.py \
+         --ckpt-path "<Path-To-DeepSeek-V3-0324-DS-E256MP8>" \
+         --config configs/config_671B.json --track-expert-scores
+
+# Prune low-importance experts
+python3 moe_pruner.py --input-hf-path "<Path-To-DeepSeek-V3-0324>" \
+                      --input-expert-scores config_671B_expert_scores_seqlen_8k.json \
+                      --prune-expert "<Num-Expert-To-Prune>" \
+                      --output-hf-path "<Path-To-Pruned-FP8-Model>"
+
+# Cast the pruned FP8 model back to BF16 for quantization
+python3 fp8_cast_bf16.py --input-fp8-hf-path "<Path-To-Pruned-FP8-Model>" \
+                         --output-bf16-hf-path "<Path-To-Pruned-BF16-Model>"
 ```
 
 ## Quantization
